@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lekcija 1</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: rgba(255,255,255,0.05);
+}
+
+.btn {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.answers button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.correct {
+  background: #22c55e !important;
+}
+
+.wrong {
+  background: #ef4444 !important;
+}
+.selected {
+  background: #ef4444;
+  opacity: 0.8;
+}
+
+.hidden {
+  display: none;
+}
+
+.review {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.review div {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <button class="btn" onclick="nazad()">← Lekcije</button>
+  <div>Lekcija 1</div>
+</div>
+
+<div class="container">
+
+  <div id="mode">
+    <h2>Izaberi način rada</h2>
+    <button class="btn" onclick="start('test')">Test</button>
+    <button class="btn" onclick="start('learn')">Učenje</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="card">
+      <h3 id="question"></h3>
+      <div class="answers" id="answers"></div>
+    </div>
+    <button class="btn" onclick="next()">Sljedeće</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <h2 id="score"></h2>
+    <div class="review" id="review"></div>
+    <button class="btn" onclick="restart()">Ponovi</button>
+    <button class="btn" onclick="nextLesson()">Sljedeća lekcija</button>
+  </div>
+
+</div>
+
+<script>
+
+let modeType = "";
+let current = 0;
+let score = 0;
+let mistakes = [];
+const pitanja = [
+
+  { p:"U nematerijalnu imovinu privrednog društva spada:", a:[
+    "patenti",
+    "licence",
+    "know-how",
+    "sve navedeno"
+  ], t:3 },
+
+  { p:"Akcijama preduzeća trguje se na:", a:[
+    "tržištu novca",
+    "deviznom tržištu",
+    "tržištu kapitala",
+    "terminskom tržištu"
+  ], t:2 },
+
+  { p:"Akcionari određenog preduzeća su njegovi:", a:[
+    "vlasnici",
+    "posrednici",
+    "poreznici",
+    "brokeri"
+  ], t:0 },
+
+  { p:"Drugi naziv za emisijsku premiju je:", a:[
+    "diskont",
+    "dividenda",
+    "žio",
+    "disagio"
+  ], t:2 },
+
+  { p:"Sposobnost zamjene jedne valute za drugu je:", a:[
+    "konvertibilnost",
+    "nepromjenjivost",
+    "promjenjivost",
+    "ništa od navedenog"
+  ], t:0 },
+
+  { p:"Koji je glavni cilj finansijskog menadžmenta:", a:[
+    "maksimiziranje prodaje",
+    "smanjenje troškova poslovanja",
+    "smanjenje broja zaposlenih",
+    "maksimiziranje vrijednosti preduzeća za akcionare"
+  ], t:3 },
+
+  { p:"Koji od sljedećih pokazatelja najbolje mjeri sposobnost preduzeća da izmiruje svoje kratkoročne obaveze:", a:[
+    "koeficijent zaduženosti",
+    "koeficijent likvidnosti",
+    "neto profitna marža",
+    "rentabilnost kapitala"
+  ], t:1 },
+
+  { p:"Koja od sljedećih tvrdnji je tačna u vezi sa analizom novčanih tokova:", a:[
+    "pozitivan novčani tok je nepovoljan za preduzeće",
+    "negativan novčani tok znači da preduzeće ima više izlaznih nego ulaznih novčanih sredstava",
+    "ništa od navedenog",
+    "novčani tok je relevantan samo za velike korporacije"
+  ], t:1 },
+
+  { p:"Dvostrani finansijski izvještaj koji daje pregled aktive i pasive, odnosno daje detalje o imovini, obavezama i kapitalu preduzeća na određeni datum naziva se:", a:[
+    "Bilans stanja",
+    "Bilans uspjeha",
+    "Poreski bilans",
+    "Platni bilans"
+  ], t:0 },
+
+  { p:"Latentne rezerve u bilansima preduzeća nastaju:", a:[
+    "akumuliranjem dobitka",
+    "dugoročnim rezervisanjima",
+    "potcjenjivanjem imovine ili precjenjivanjem obaveza",
+    "naplatom glavnice dugoročnih plasmana"
+  ], t:2 },
+
+  { p:"Iznos kojim se otplaćuje kredit ili zajam prema planu otplate naziva se:", a:[
+    "anuitet",
+    "avans",
+    "akreditiv",
+    "akvizicija"
+  ], t:0 },
+
+  { p:"U akcionarskim društvima menadžment preduzeća predstavlja:", a:[
+    "upravu (poslovodstvo) preduzeća",
+    "kreditore preduzeća",
+    "povjerioce preduzeća",
+    "vlasnike preduzeća"
+  ], t:0 },
+
+  { p:"Izvori sredstava preduzeća odnosno imovina prema vlasništvu u bilansu stanja nazivaju se:", a:[
+    "aktiva",
+    "pasiva",
+    "osnovna",
+    "obrtna"
+  ], t:1 },
+
+  { p:"Venture capital (VC) je engleski naziv za:", a:[
+    "osnovni kapital",
+    "pozajmljena sredstva",
+    "kapital stranih kompanija",
+    "rizični kapital"
+  ], t:3 },
+
+  { p:"Finansijski pokazatelj P/E je skraćenica za:", a:[
+    "racio cijena/knjigovodstvena vrijednost akcije",
+    "ra cio cijena/prihodi od prodaje",
+    "ra cio cijena/zarada po akciji",
+    "ra cio cijena/fer vrijednost akcije"
+  ], t:2 },
+
+  { p:"Koji je osnovni cilj ocjene profitabilnosti preduzeća:", a:[
+    "da se utvrdi sposobnost preduzeća da izmiruje svoje obaveze",
+    "da se ocijeni sposobnost preduzeća da generiše prihod u odnosu na svoje troškove i obaveze",
+    "da se optimizuje struktura kapitala",
+    "da se izračunaju dugoročne investicije preduzeća"
+  ], t:1 },
+
+  { p:"Zarađivačka moć imovine odnosno moć prinosa na uloženu imovinu naziva se:", a:[
+    "likvidnost",
+    "solventnost",
+    "finansijska stabilnost",
+    "rentabilnost"
+  ], t:3 },
+
+  { p:"Koji je cilj optimizacije poreza u poslovnom finansiranju:", a:[
+    "uvećanje osnovnih prihoda preduzeća",
+    "minimiziranje poreskih obaveza uz poštovanje zakonskih okvira",
+    "odlaganje plaćanja poreskih obaveza",
+    "smanjenje broja zaposlenih"
+  ], t:1 },
+
+  { p:"Oblik finansijske pomoći koju država daje ustanovama i privrednicima za strogo određenu namjenu naziva se:", a:[
+    "javni poklon",
+    "javni dug",
+    "budžet",
+    "subvencija"
+  ], t:3 },
+
+  { p:"CEFTA je sporazum o:", a:[
+    "slobodnoj trgovini",
+    "carinskoj uniji",
+    "jedinstvenom tržištu",
+    "zajedničkom tržištu"
+  ], t:0 },
+
+  { p:"Budžet države predstavlja:", a:[
+    "plan ulaganja preduzeća u toku godine",
+    "sistematizovan i u ciframa izražen pregled državnih prihoda i rashoda u toku godine",
+    "višak državnih rashoda nad državnim prihodima",
+    "sistemski pregled svih ekonomskih odnosa jedne zemlje sa inostranstvom"
+  ], t:1 },
+
+  { p:"Upravljanje javnim prihodima, rashodima i javnim zaduživanjima spada u širu oblast:", a:[
+    "spoljnotrgovinske politike",
+    "poljoprivredne politike",
+    "monetarne politike",
+    "fiskalne politike"
+  ], t:3 }
+
+];
+function start(m){
+  modeType = m;
+  document.getElementById("mode").style.display="none";
+  document.getElementById("quiz").style.display="block";
+  show();
+}
+
+function show(){
+  let q = pitanja[current];
+  document.getElementById("question").innerText = q.p;
+
+  let ans = document.getElementById("answers");
+  ans.innerHTML = "";
+
+  q.izabrano = null;
+
+  q.a.forEach((odg,i)=>{
+    let btn = document.createElement("button");
+    btn.innerText = odg;
+
+    btn.onclick = () => {
+
+  document.querySelectorAll(".answers button")
+    .forEach(b => b.classList.remove("selected", "correct", "wrong"));
+
+  btn.classList.add("selected");
+
+  q.izabrano = i;
+
+  // 🔥 SAMO ZA UČENJE MODE
+  if (modeType === "learn") {
+
+    if (i === q.t) {
+      btn.classList.add("correct"); // zeleno
+    } else {
+      btn.classList.add("wrong"); // crveno
+
+      // pokaži i tačan odgovor zeleno
+      document.querySelectorAll(".answers button")[q.t]
+        .classList.add("correct");
+    }
+  }
+};
+
+    ans.appendChild(btn);
+  });
+}
+
+function next(){
+  let q = pitanja[current];
+
+  if(q.izabrano === q.t){
+    score++;
+  } else {
+    mistakes.push({pitanje:q.p, tacan:q.a[q.t]});
+  }
+
+  current++;
+
+  if(current < pitanja.length){
+    show();
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+
+  document.getElementById("score").innerText =
+    "Rezultat: " + score + "/" + pitanja.length;
+
+  let review = document.getElementById("review");
+  review.innerHTML = "<h3>Greške:</h3>";
+
+  if(mistakes.length === 0){
+    review.innerHTML += "<p>Sve tačno 🎉</p>";
+  } else {
+    mistakes.forEach(m=>{
+      review.innerHTML += `
+        <div>
+          <b>Pitanje:</b> ${m.pitanje}<br>
+          <b>Tačan odgovor:</b> ${m.tacan}
+        </div>
+      `;
+    });
+  }
+}
+
+function restart(){
+  current=0;
+  score=0;
+  mistakes=[];
+  document.getElementById("result").style.display="none";
+  document.getElementById("mode").style.display="block";
+}
+
+function nazad(){
+  window.location.href="pocetna.html";
+}
+
+function nextLesson(){
+  alert("Sljedeća lekcija uskoro 😄");
+}
+
+</script>
+
+</body>
+</html>

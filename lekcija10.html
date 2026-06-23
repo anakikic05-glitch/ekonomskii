@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lekcija 1</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: rgba(255,255,255,0.05);
+}
+
+.btn {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.answers button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.correct {
+  background: #22c55e !important;
+}
+
+.wrong {
+  background: #ef4444 !important;
+}
+.selected {
+  background: #ef4444;
+  opacity: 0.8;
+}
+
+.hidden {
+  display: none;
+}
+
+.review {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.review div {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <button class="btn" onclick="nazad()">← Lekcije</button>
+  <div>Lekcija 1</div>
+</div>
+
+<div class="container">
+
+  <div id="mode">
+    <h2>Izaberi način rada</h2>
+    <button class="btn" onclick="start('test')">Test</button>
+    <button class="btn" onclick="start('learn')">Učenje</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="card">
+      <h3 id="question"></h3>
+      <div class="answers" id="answers"></div>
+    </div>
+    <button class="btn" onclick="next()">Sljedeće</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <h2 id="score"></h2>
+    <div class="review" id="review"></div>
+    <button class="btn" onclick="restart()">Ponovi</button>
+    <button class="btn" onclick="nextLesson()">Sljedeća lekcija</button>
+  </div>
+
+</div>
+
+<script>
+
+let modeType = "";
+let current = 0;
+let score = 0;
+let mistakes = [];
+const pitanja = [
+  { p:"Šta od navedenog ne spada u kriptovalute?\nа) ", a:["Bitcoin","Ethereum","Ripple","Forex"], t:3 },
+
+  { p:"„Башту сљезове боје“ написао је: ", a:["Петар Кочић","Иво Андрић","Вук Караџић","Бранко Ћопић"], t:3 },
+
+  { p:"Brod Titanic je potonuo:", a:["1912","1933","1914","1927"], t:0 },
+
+  { p:"Singidunum je antički grad koji se nalazio na teritoriji današnjeg:", a:["Novi Sad","Niš","Gornji Milanovac","Beograd"], t:3 },
+
+  { p:"Plitvička jezera se nalaze u:", a:["Crna Gora","Srbija","Slovenija","Hrvatska"], t:3 },
+
+  { p:"Glavni junak djela „Jazavac pred sudom“ je:", a:["David Štrbac","Danko Štrbac","Janko Štrbac","David Škondrić"], t:0 },
+
+  { p:"Epika kao književni rod ne obuhvata:", a:["epske pjesme","romane","novele","himne"], t:3 },
+
+  { p:"Hipokratovu zakletvu polažu:", a:["pravnik","ljekar","advokat","sudija"], t:1 },
+
+  { p:"Šekspirov junak Hamlet bio je:", a:["njemački kraljević","škotski princ","danski kraljević","engleski princ"], t:2 },
+
+  { p:"Kada se prvi put u istoriji grad Banja Luka pominje pod sadašnjim imenom?", a:["1050","1325","1187","1494"], t:3 },
+
+  { p:"Tvrđenje suprotno opštem i uobičajenom mišljenju naziva se:", a:["paradoks","teza","hipoteza","antiteza"], t:0 },
+
+  { p:"Organizacije koje nastoje osvojiti vlast putem izbora nazivaju se:", a:["političke stranke","udruženja građana","nevladine institucije","nevladine organizacije"], t:0 },
+
+  { p:"Pravne norme su potpune ukoliko sadrže:", a:["A","B","C","D"], t:2 },
+
+  { p:"Vijeće ministara BiH ima:", a:["zakonodavnu","izvršnu","sudsku","sve tri"], t:1 },
+
+  { p:"U kojoj zemlji euro nije domaća valuta?", a:["Francuska","Italija","Španija","Švajcarska"], t:3 },
+
+  { p:"Najpoznatiji hram antičkog Rima:", a:["Partenon","Panteon","Koloseum","Olimpiko"], t:1 },
+
+  { p:"„Tihi Don“ je djelo:", a:["Tolstoj","Jesenjin","Šolohov","ništa"], t:2 },
+
+  { p:"Zmiјanjski vez zaštitio je:", a:["UNICEF","EU","UNESCO","UNDP"], t:2 },
+
+  { p:"„I drugo“ skraćeno se piše kao:", a:["i dr.","i d.r.","idr","idr."], t:0 },
+
+  { p:"Novinski list koji dodjeljuje NIN-ovu nagradu:", a:["Politika","Književnost","NIN"], t:2 }
+];
+function start(m){
+  modeType = m;
+  document.getElementById("mode").style.display="none";
+  document.getElementById("quiz").style.display="block";
+  show();
+}
+
+function show(){
+  let q = pitanja[current];
+  document.getElementById("question").innerText = q.p;
+
+  let ans = document.getElementById("answers");
+  ans.innerHTML = "";
+
+  q.izabrano = null;
+
+  q.a.forEach((odg,i)=>{
+    let btn = document.createElement("button");
+    btn.innerText = odg;
+
+    btn.onclick = () => {
+
+  document.querySelectorAll(".answers button")
+    .forEach(b => b.classList.remove("selected", "correct", "wrong"));
+
+  btn.classList.add("selected");
+
+  q.izabrano = i;
+
+  // 🔥 SAMO ZA UČENJE MODE
+  if (modeType === "learn") {
+
+    if (i === q.t) {
+      btn.classList.add("correct"); // zeleno
+    } else {
+      btn.classList.add("wrong"); // crveno
+
+      // pokaži i tačan odgovor zeleno
+      document.querySelectorAll(".answers button")[q.t]
+        .classList.add("correct");
+    }
+  }
+};
+
+    ans.appendChild(btn);
+  });
+}
+
+function next(){
+  let q = pitanja[current];
+
+  if(q.izabrano === q.t){
+    score++;
+  } else {
+    mistakes.push({pitanje:q.p, tacan:q.a[q.t]});
+  }
+
+  current++;
+
+  if(current < pitanja.length){
+    show();
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+
+  document.getElementById("score").innerText =
+    "Rezultat: " + score + "/" + pitanja.length;
+
+  let review = document.getElementById("review");
+  review.innerHTML = "<h3>Greške:</h3>";
+
+  if(mistakes.length === 0){
+    review.innerHTML += "<p>Sve tačno 🎉</p>";
+  } else {
+    mistakes.forEach(m=>{
+      review.innerHTML += `
+        <div>
+          <b>Pitanje:</b> ${m.pitanje}<br>
+          <b>Tačan odgovor:</b> ${m.tacan}
+        </div>
+      `;
+    });
+  }
+}
+
+function restart(){
+  current=0;
+  score=0;
+  mistakes=[];
+  document.getElementById("result").style.display="none";
+  document.getElementById("mode").style.display="block";
+}
+
+function nazad(){
+  window.location.href="pocetna.html";
+}
+
+function nextLesson(){
+  alert("Sljedeća lekcija uskoro 😄");
+}
+
+</script>
+
+</body>
+</html>

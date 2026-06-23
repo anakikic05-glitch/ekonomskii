@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lekcija 1</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: rgba(255,255,255,0.05);
+}
+
+.btn {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.answers button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.correct {
+  background: #22c55e !important;
+}
+
+.wrong {
+  background: #ef4444 !important;
+}
+.selected {
+  background: #ef4444;
+  opacity: 0.8;
+}
+
+.hidden {
+  display: none;
+}
+
+.review {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.review div {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <button class="btn" onclick="nazad()">← Lekcije</button>
+  <div>Lekcija 1</div>
+</div>
+
+<div class="container">
+
+  <div id="mode">
+    <h2>Izaberi način rada</h2>
+    <button class="btn" onclick="start('test')">Test</button>
+    <button class="btn" onclick="start('learn')">Učenje</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="card">
+      <h3 id="question"></h3>
+      <div class="answers" id="answers"></div>
+    </div>
+    <button class="btn" onclick="next()">Sljedeće</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <h2 id="score"></h2>
+    <div class="review" id="review"></div>
+    <button class="btn" onclick="restart()">Ponovi</button>
+    <button class="btn" onclick="nextLesson()">Sljedeća lekcija</button>
+  </div>
+
+</div>
+
+<script>
+
+let modeType = "";
+let current = 0;
+let score = 0;
+let mistakes = [];
+const pitanja = [
+  { p:"Milijarditi dio jedinice mjerenja obilježava se prefiksom:", a:["piko","mili","nano","kilo"], t:2 },
+
+  { p:"Cogito, ergo sum u prevodu znači:", a:["Sve teče, sve se mijenja","Mislim, dakle postojim","Kocka je bačena","Iskoristi dan"], t:1 },
+
+  { p:"Ceteris paribus u prevodu znači:", a:["i slično","i drugo","uz napomenu","sve ostalo konstantno"], t:3 },
+
+  { p:"Baobab je vrsta:", a:["afričkog bubnja","totema","energetskog pića","drveta"], t:3 },
+
+  { p:"Koji od navedenih pridjeva ima nepravilan oblik komparativa:", a:["pametan","lijep","dobar","hrabar"], t:2 },
+
+  { p:"Od ponuđenih glagolskih oblika odabrati nelični glagolski oblik.", a:["prezent","perfekat","glagolski pridjev trpni","imperativ"], t:2 },
+
+  { p:"Najveći svjetski okean je:", a:["Tihi","Arktički","Atlantski","Indijski"], t:0 },
+
+  { p:"Endemski rod sisara iz Australije je:", a:["tigar","kengur","dingo","iguanа"], t:1 },
+
+  { p:"Koje godine je Sarajevo bilo domaćin Zimskih olimpijskih igara?", a:["1984","1980","1985","1987"], t:0 },
+
+  { p:"Sile osovine u Drugom svjetskom ratu činile su sljedeće države:", a:["Njemačka, Austrija i Italija","Njemačka, Italija i Japan","Njemačka, Italija i Španija","Austrija, Italija i Japan"], t:1 },
+
+  { p:"Prašuma „Perućica“ se nalazi u:", a:["Srbiji","Crnoj Gori","Bosni i Hercegovini","Bugarskoj"], t:2 },
+
+  { p:"Grad svjetlosti je izraz koji se koristi kao sinonim za:", a:["London","Njujork","Hong Kong","Pariz"], t:3 },
+
+  { p:"Pjesmu Ostaјte ovdje napisao je:", a:["Branko Radičević","Aleksa Šantić","Jakov Ignjatović","Jovan Dučić"], t:1 },
+
+  { p:"Zaokružiti bezvučne zubne suglasnike.", a:["T, S, C","D, Z","R, L, N","B, G, D"], t:0 },
+
+  { p:"Raskoljnikov je ličnost iz djela:", a:["Makсima Gorkog","Fjodora Dostojevskog","Aleksandra Puškina","Lava Tolstoja"], t:1 },
+
+  { p:"Riječ „putešestvije“ je:", a:["arhaizam","varvarizam","romanizam","neologizam"], t:0 },
+
+  { p:"Djelo „Gospodar prstenova“ napisao je:", a:["Tolkien","Hese","Šekspir","Gete"], t:0 },
+
+  { p:"„Beskrajni plavi krug, u njemu zvijezda“, centralni je simbol romana:", a:["Deobe","Seobe","Na Drini ćuprija","Kosovo"], t:1 },
+
+  { p:"Ko je napisao roman „Besnilo“?", a:["Dobrica Ćosić","Miloš Crnjanski","Borislav Pekić","Žoze Saramago"], t:2 },
+
+  { p:"Koji je od navedenih zidova izgrađen 1961. godine?", a:["Berlinski zid","Kineski zid","Zid plača","Zid srama"], t:0 }
+];
+function start(m){
+  modeType = m;
+  document.getElementById("mode").style.display="none";
+  document.getElementById("quiz").style.display="block";
+  show();
+}
+
+function show(){
+  let q = pitanja[current];
+  document.getElementById("question").innerText = q.p;
+
+  let ans = document.getElementById("answers");
+  ans.innerHTML = "";
+
+  q.izabrano = null;
+
+  q.a.forEach((odg,i)=>{
+    let btn = document.createElement("button");
+    btn.innerText = odg;
+
+    btn.onclick = () => {
+
+  document.querySelectorAll(".answers button")
+    .forEach(b => b.classList.remove("selected", "correct", "wrong"));
+
+  btn.classList.add("selected");
+
+  q.izabrano = i;
+
+  // 🔥 SAMO ZA UČENJE MODE
+  if (modeType === "learn") {
+
+    if (i === q.t) {
+      btn.classList.add("correct"); // zeleno
+    } else {
+      btn.classList.add("wrong"); // crveno
+
+      // pokaži i tačan odgovor zeleno
+      document.querySelectorAll(".answers button")[q.t]
+        .classList.add("correct");
+    }
+  }
+};
+
+    ans.appendChild(btn);
+  });
+}
+
+function next(){
+  let q = pitanja[current];
+
+  if(q.izabrano === q.t){
+    score++;
+  } else {
+    mistakes.push({pitanje:q.p, tacan:q.a[q.t]});
+  }
+
+  current++;
+
+  if(current < pitanja.length){
+    show();
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+
+  document.getElementById("score").innerText =
+    "Rezultat: " + score + "/" + pitanja.length;
+
+  let review = document.getElementById("review");
+  review.innerHTML = "<h3>Greške:</h3>";
+
+  if(mistakes.length === 0){
+    review.innerHTML += "<p>Sve tačno 🎉</p>";
+  } else {
+    mistakes.forEach(m=>{
+      review.innerHTML += `
+        <div>
+          <b>Pitanje:</b> ${m.pitanje}<br>
+          <b>Tačan odgovor:</b> ${m.tacan}
+        </div>
+      `;
+    });
+  }
+}
+
+function restart(){
+  current=0;
+  score=0;
+  mistakes=[];
+  document.getElementById("result").style.display="none";
+  document.getElementById("mode").style.display="block";
+}
+
+function nazad(){
+  window.location.href="pocetna.html";
+}
+
+function nextLesson(){
+  alert("Sljedeća lekcija uskoro 😄");
+}
+
+</script>
+
+</body>
+</html>

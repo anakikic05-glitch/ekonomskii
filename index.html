@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+  <meta charset="UTF-8">
+  <title>Aplikacija za učenje</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: #0f172a;
+      color: white;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 25px;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    /* HOME */
+    .home {
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .home h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .home p {
+      opacity: 0.8;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      padding: 15px 30px;
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* LEKCIJE */
+    .lekcije {
+      display: none;
+      padding: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.2s;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      background: #334155;
+    }
+
+    .title {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <div class="navbar">
+    <div class="logo">📚 Učenje</div>
+    <div>Test App</div>
+  </div>
+
+  <!-- HOME -->
+  <div class="home" id="home">
+    <h1>Uči pametnije, ne teže</h1>
+    <p>Pripremi se za prijemni kroz kvizove i testove</p>
+    <button class="btn" onclick="idiNaLekcije()">Počni</button>
+  </div>
+
+  <!-- LEKCIJE -->
+  <div class="lekcije" id="lekcije">
+    <div class="title">Izaberi lekciju</div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <script>
+    function idiNaLekcije() {
+      document.getElementById("home").style.display = "none";
+      document.getElementById("lekcije").style.display = "block";
+    }
+
+   const grid = document.getElementById("grid");
+
+for (let i = 1; i <= 20; i++) {
+  let div = document.createElement("div");
+  div.className = "card";
+  div.innerText = "Lekcija " + i;
+
+  // 🔥 OVO JE BITNO
+  div.onclick = () => {
+    window.location.href = "lekcija" + i + ".html";
+  };
+
+  grid.appendChild(div);
+
+    }
+  </script>
+
+</body>
+</html>

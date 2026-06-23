@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lekcija 1</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: rgba(255,255,255,0.05);
+}
+
+.btn {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.answers button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.correct {
+  background: #22c55e !important;
+}
+
+.wrong {
+  background: #ef4444 !important;
+}
+.selected {
+  background: #ef4444;
+  opacity: 0.8;
+}
+
+.hidden {
+  display: none;
+}
+
+.review {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.review div {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <button class="btn" onclick="nazad()">← Lekcije</button>
+  <div>Lekcija 1</div>
+</div>
+
+<div class="container">
+
+  <div id="mode">
+    <h2>Izaberi način rada</h2>
+    <button class="btn" onclick="start('test')">Test</button>
+    <button class="btn" onclick="start('learn')">Učenje</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="card">
+      <h3 id="question"></h3>
+      <div class="answers" id="answers"></div>
+    </div>
+    <button class="btn" onclick="next()">Sljedeće</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <h2 id="score"></h2>
+    <div class="review" id="review"></div>
+    <button class="btn" onclick="restart()">Ponovi</button>
+    <button class="btn" onclick="nextLesson()">Sljedeća lekcija</button>
+  </div>
+
+</div>
+
+<script>
+
+let modeType = "";
+let current = 0;
+let score = 0;
+let mistakes = [];
+const pitanja = [
+  { p:"Ceraska bitka se odigrala u:", a:["Prvom svjetskom ratu","Drugom svjetskom ratu","Prvom balkanskom ratu","Drugom balkanskom ratu"], t:0 },
+
+  { p:"Feldmaršal Romel (Erwin Johannes Eugen Rommel) bio je poznat pod nadimkom:", a:["Pustinjska lisica","Pustinjski Lav","Pustinjski tigar","Afrički lav"], t:0 },
+
+  { p:"Srpski nobelovac je:", a:["Nikola Tesla","Mihajlo Pupin","Milutin Milanković","Ivo Andrić"], t:3 },
+
+  { p:"U kojem gradu se nalazi opservatorija po kojoj je nazvan Grinički meridijan?", a:["Madrid","Pariz","London","Glasgov"], t:2 },
+
+  { p:"Ko su bile zaraćene strane u Stogodišnjem ratu?", a:["Francuska i Bavarska","Francuska i Engleska","Engleska i Norveška","Pruska i Austrija"], t:1 },
+
+  { p:"Drugi balkanski rat započeo je napadom:", a:["Srbije na Bugarsku","Bugarske na Srbiju","Grčke na Bugarsku","Srbije na Albaniju"], t:1 },
+
+  { p:"Koje godine i u kojem gradu su osnovane Ujedinjene nacije:", a:["1945, San Francisko","1947, San Francisko","1947, Njujork","1939, Njujork"], t:0 },
+
+  { p:"Hugo Čavez je bio na čelu:", a:["Kube","Argentine","Venecuele","Urugvaja"], t:2 },
+
+  { p:"Bankarski posao prikupljanja depozita spada u:", a:["pasivne bankarske poslove","aktivne bankarske poslove","kartično poslovanje","lizing"], t:0 },
+
+  { p:"Datum koji simbolizuje početak Francuske buržoaske revolucije je:", a:["14.07.1789.","07.11.1689.","14.07.1889.","07.12.1789."], t:0 },
+
+  { p:"Najveća planeta u sunčevom sistemu je:", a:["Zemlja","Pluton","Mars","Jupiter"], t:3 },
+
+  { p:"Ptica Feniks je simbol:", a:["mudrosti","besmrtnosti","mira","rata"], t:1 },
+
+  { p:"Himna Evropske unije je:", a:["Oda radosti","Pjesma sloge","Marseljeza","Ujedinjeni svijet"], t:0 },
+
+  { p:"Sjedište NATO-a je u:", a:["Londonu","Hagu","Briselu","Strazburu"], t:2 },
+
+  { p:"Koja od navedenih zemalja nije članica NATO-a?", a:["Slovenija","Crna Gora","Sjeverna Makedonija","Srbija"], t:3 },
+
+  { p:"Inflacija je:", a:["pojava stalnog rasta cijena","kupovina nove opreme","promjena privrednog sistema","ubrzanje tehnološkog postupka"], t:0 },
+
+  { p:"Javorov list je simbol:", a:["Švedske","Norveške","Kanade","Finske"], t:2 },
+
+  { p:"Himna Evropske unije je:", a:["Marseljeza","Ujedinjeni svijet","Pjesma sloge","Oda radosti"], t:3 },
+
+  { p:"Otvorenost poslovne organizacije i njena spremnost za prihvatanje javnog uvida i nadzora nad njenim poslovanjem od strane interesnih grupa naziva se:", a:["transparentnost","diverzifikovanost","etičnost","ništa od navedenog"], t:0 },
+
+  { p:"Posebna vrsta poreza iz rashoda kojim se oporezuje potrošnja određenih proizvoda, najčešće luksuznih proizvoda zove se:", a:["taksa","carina","parafiskaliteti","akcize"], t:3 }
+];
+function start(m){
+  modeType = m;
+  document.getElementById("mode").style.display="none";
+  document.getElementById("quiz").style.display="block";
+  show();
+}
+
+function show(){
+  let q = pitanja[current];
+  document.getElementById("question").innerText = q.p;
+
+  let ans = document.getElementById("answers");
+  ans.innerHTML = "";
+
+  q.izabrano = null;
+
+  q.a.forEach((odg,i)=>{
+    let btn = document.createElement("button");
+    btn.innerText = odg;
+
+    btn.onclick = () => {
+
+  document.querySelectorAll(".answers button")
+    .forEach(b => b.classList.remove("selected", "correct", "wrong"));
+
+  btn.classList.add("selected");
+
+  q.izabrano = i;
+
+  // 🔥 SAMO ZA UČENJE MODE
+  if (modeType === "learn") {
+
+    if (i === q.t) {
+      btn.classList.add("correct"); // zeleno
+    } else {
+      btn.classList.add("wrong"); // crveno
+
+      // pokaži i tačan odgovor zeleno
+      document.querySelectorAll(".answers button")[q.t]
+        .classList.add("correct");
+    }
+  }
+};
+
+    ans.appendChild(btn);
+  });
+}
+
+function next(){
+  let q = pitanja[current];
+
+  if(q.izabrano === q.t){
+    score++;
+  } else {
+    mistakes.push({pitanje:q.p, tacan:q.a[q.t]});
+  }
+
+  current++;
+
+  if(current < pitanja.length){
+    show();
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+
+  document.getElementById("score").innerText =
+    "Rezultat: " + score + "/" + pitanja.length;
+
+  let review = document.getElementById("review");
+  review.innerHTML = "<h3>Greške:</h3>";
+
+  if(mistakes.length === 0){
+    review.innerHTML += "<p>Sve tačno 🎉</p>";
+  } else {
+    mistakes.forEach(m=>{
+      review.innerHTML += `
+        <div>
+          <b>Pitanje:</b> ${m.pitanje}<br>
+          <b>Tačan odgovor:</b> ${m.tacan}
+        </div>
+      `;
+    });
+  }
+}
+
+function restart(){
+  current=0;
+  score=0;
+  mistakes=[];
+  document.getElementById("result").style.display="none";
+  document.getElementById("mode").style.display="block";
+}
+
+function nazad(){
+  window.location.href="pocetna.html";
+}
+
+function nextLesson(){
+  alert("Sljedeća lekcija uskoro 😄");
+}
+
+</script>
+
+</body>
+</html>

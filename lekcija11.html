@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lekcija 1</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: rgba(255,255,255,0.05);
+}
+
+.btn {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.answers button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.correct {
+  background: #22c55e !important;
+}
+
+.wrong {
+  background: #ef4444 !important;
+}
+.selected {
+  background: #ef4444;
+  opacity: 0.8;
+}
+
+.hidden {
+  display: none;
+}
+
+.review {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.review div {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <button class="btn" onclick="nazad()">← Lekcije</button>
+  <div>Lekcija 1</div>
+</div>
+
+<div class="container">
+
+  <div id="mode">
+    <h2>Izaberi način rada</h2>
+    <button class="btn" onclick="start('test')">Test</button>
+    <button class="btn" onclick="start('learn')">Učenje</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="card">
+      <h3 id="question"></h3>
+      <div class="answers" id="answers"></div>
+    </div>
+    <button class="btn" onclick="next()">Sljedeće</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <h2 id="score"></h2>
+    <div class="review" id="review"></div>
+    <button class="btn" onclick="restart()">Ponovi</button>
+    <button class="btn" onclick="nextLesson()">Sljedeća lekcija</button>
+  </div>
+
+</div>
+
+<script>
+
+let modeType = "";
+let current = 0;
+let score = 0;
+let mistakes = [];
+const pitanja = [
+  { p:"Profesor doktor skraćeno se piše:", a:["prof dr","prof. dr.","prof dr.","prof. dr"], t:3 },
+
+  { p:"Romul i Rem vezuju se za:", a:["osnivanje Atine","osnivanje Kartagine","osnivanje Rima","pad Rimskog carstva"], t:2 },
+
+  { p:"Koje od navedenih jela se nije moglo naći na trpezi cara Dušana?", a:["kuvana piletina","maslinovo ulje","pečeni krompir","pšenični hljeb"], t:2 },
+
+  { p:"Kaste su:", a:["otvorene društvene grupe","zatvoreni slojevi društva","nepolitičke organizacije","otvoreni slojevi društva"], t:1 },
+
+  { p:"Municipalne obveznice izdaje:", a:["država","preduzeće","opština","fizičko lice"], t:2 },
+
+  { p:"Podzakonske akte donosi:", a:["predsjednik države","parlament","sud","izvršno-politički, upravni i lokalni samoupravni organi"], t:3 },
+
+  { p:"Program za skladištenje, obradu i analizu prvenstveno numeričkih podataka iz paketa «Microsoft Office» naziva se:", a:["Microsoft Word","Microsoft Excel","Microsoft Outlook","Microsoft PowerPoint"], t:1 },
+
+  { p:"Grana unutrašnjeg prava koja sadrži pravila kojima se regulišu imovinski odnosi, lična neimovinska prava i pravni položaj lica u tim odnosima, je:", a:["krivično pravo","autorsko pravo","upravni postupak","građansko pravo"], t:3 },
+
+  { p:"Kupon kod obveznice pokazuje:", a:["vlasnika obveznice","izdavaoca obveznice","kamatu obveznice","zemlju porijekla"], t:2 },
+
+  { p:"Dividenda je:", a:["prihod od akcija","vanredni prihod","prihod od obveznica","ništa od navedenog"], t:0 },
+
+  { p:"Analiza snaga, slabosti, prilika i prijetnji naziva se:", a:["SWAP analiza","SWOT analiza","SWIFT analiza","SWAF analiza"], t:1 },
+
+  { p:"Banka Federalnih rezervi (FED) je centralna banka:", a:["Bosne i Hercegovine","Srbije","Velike Britanije","Sjedinjenih Američkih Država"], t:3 },
+
+  { p:"Porez na dobitak je:", a:["direktni porez","indirektni porez","PDV","ništa od navedenog"], t:0 },
+
+  { p:"Šta je akcija?", a:["hartija od vrijednosti","uplatnica","faktura","nalog za isplatu"], t:0 },
+
+  { p:"Prigovor zbog neizvršenja ugovorenih obaveza naziva se:", a:["tužba","reklamacija","akreditacija","akontacija"], t:1 },
+
+  { p:"Globalna finansijska kriza 2008. još se naziva i:", a:["velika recesija","velika regresija","velika depresija","velika bankarska kriza"], t:0 },
+
+  { p:"Specijalna prava vučenja su:", a:[
+    "vrsta novca koji emituje Međunarodni monetarni fond",
+    "rezervna svjetska valuta",
+    "novac kojim se finansira deficit platnih bilansa zemalja članica Međunarodnog monetarnog fonda",
+    "sve navedeno"
+  ], t:3 },
+
+  { p:"Vrijednost robe na koju se obračunava carina naziva se:", a:["carinska osnovica","carinska tarifa","carinsko opterećenje","sve navedeno"], t:0 },
+
+  { p:"Rast obima proizvodnje dovešće do:", a:["rasta prosječnih fiksnih troškova","smanjenja prosječnih fiksnih troškova","neće uticati na prosječne fiksne troškove","ništa od navedenog"], t:1 },
+
+  { p:"U institucionalne investitore ne spadaju:", a:["osiguravajuća društva","penzioni fondovi","domaćinstva","investicioni fondovi"], t:2 }
+];
+function start(m){
+  modeType = m;
+  document.getElementById("mode").style.display="none";
+  document.getElementById("quiz").style.display="block";
+  show();
+}
+
+function show(){
+  let q = pitanja[current];
+  document.getElementById("question").innerText = q.p;
+
+  let ans = document.getElementById("answers");
+  ans.innerHTML = "";
+
+  q.izabrano = null;
+
+  q.a.forEach((odg,i)=>{
+    let btn = document.createElement("button");
+    btn.innerText = odg;
+
+    btn.onclick = () => {
+
+  document.querySelectorAll(".answers button")
+    .forEach(b => b.classList.remove("selected", "correct", "wrong"));
+
+  btn.classList.add("selected");
+
+  q.izabrano = i;
+
+  // 🔥 SAMO ZA UČENJE MODE
+  if (modeType === "learn") {
+
+    if (i === q.t) {
+      btn.classList.add("correct"); // zeleno
+    } else {
+      btn.classList.add("wrong"); // crveno
+
+      // pokaži i tačan odgovor zeleno
+      document.querySelectorAll(".answers button")[q.t]
+        .classList.add("correct");
+    }
+  }
+};
+
+    ans.appendChild(btn);
+  });
+}
+
+function next(){
+  let q = pitanja[current];
+
+  if(q.izabrano === q.t){
+    score++;
+  } else {
+    mistakes.push({pitanje:q.p, tacan:q.a[q.t]});
+  }
+
+  current++;
+
+  if(current < pitanja.length){
+    show();
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+
+  document.getElementById("score").innerText =
+    "Rezultat: " + score + "/" + pitanja.length;
+
+  let review = document.getElementById("review");
+  review.innerHTML = "<h3>Greške:</h3>";
+
+  if(mistakes.length === 0){
+    review.innerHTML += "<p>Sve tačno 🎉</p>";
+  } else {
+    mistakes.forEach(m=>{
+      review.innerHTML += `
+        <div>
+          <b>Pitanje:</b> ${m.pitanje}<br>
+          <b>Tačan odgovor:</b> ${m.tacan}
+        </div>
+      `;
+    });
+  }
+}
+
+function restart(){
+  current=0;
+  score=0;
+  mistakes=[];
+  document.getElementById("result").style.display="none";
+  document.getElementById("mode").style.display="block";
+}
+
+function nazad(){
+  window.location.href="pocetna.html";
+}
+
+function nextLesson(){
+  alert("Sljedeća lekcija uskoro 😄");
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lekcija 1</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: rgba(255,255,255,0.05);
+}
+
+.btn {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.answers button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.correct {
+  background: #22c55e !important;
+}
+
+.wrong {
+  background: #ef4444 !important;
+}
+.selected {
+  background: #ef4444;
+  opacity: 0.8;
+}
+
+.hidden {
+  display: none;
+}
+
+.review {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.review div {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <button class="btn" onclick="nazad()">← Lekcije</button>
+  <div>Lekcija 1</div>
+</div>
+
+<div class="container">
+
+  <div id="mode">
+    <h2>Izaberi način rada</h2>
+    <button class="btn" onclick="start('test')">Test</button>
+    <button class="btn" onclick="start('learn')">Učenje</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="card">
+      <h3 id="question"></h3>
+      <div class="answers" id="answers"></div>
+    </div>
+    <button class="btn" onclick="next()">Sljedeće</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <h2 id="score"></h2>
+    <div class="review" id="review"></div>
+    <button class="btn" onclick="restart()">Ponovi</button>
+    <button class="btn" onclick="nextLesson()">Sljedeća lekcija</button>
+  </div>
+
+</div>
+
+<script>
+
+let modeType = "";
+let current = 0;
+let score = 0;
+let mistakes = [];
+
+
+ const pitanja = [
+  { p:"Protagonist je:", a:["glavna ličnost","bjegunac","štićenik","zaštitnik"], t:0 },
+
+  { p:"Najveći aktivni vulkan u Evropi je:", a:["Etna","Vezuv","Mont Everest","Mauna Kea"], t:0 },
+
+  { p:"Speleolog istražuje:", a:["planine","okeane","pećine","prašume"], t:2 },
+
+  { p:"Jovan Cvijić je najpoznatiji srpski i balkanski:", a:["biolog","geograf","hemičar","historičar"], t:1 },
+
+  { p:"Milutin Milanković, srpski naučnik svjetskog glasa, bio je:", a:["molekularni biolog","matematičar i geofizičar","hemičar","historičar"], t:1 },
+
+  { p:"Glavni grad Kneževine Lihtenštajn (Liechtenstein):", a:["Vaduz","Triesen","Schaan","Balzers"], t:0 },
+
+  { p:"Klaustrofobija je strah od:", a:["zatvorenog prostora","neizlječive bolesti","visine","otvorenog prostora"], t:0 },
+
+  { p:"Mrtvo more je dobilo naziv zbog:", a:["izrazito niske temperature vode","izrazito visoke temperature vode","izrazito niskog saliniteta","izrazito visokog saliniteta"], t:3 },
+
+  { p:"Autokratija je:", a:[
+    "politički poredak",
+    "osnovni oblik složene države",
+    "oblik političkog sistema gdje diktator izvodi svoju vlast iz volje naroda",
+    "ništa od navedenog"
+  ], t:0 },
+
+  { p:"Mural je:", a:["španski pisac","slika urađena na zidu","fabrika stakla u Rusiji","pritoka Dunava"], t:1 },
+
+  { p:"Kineska valuta je:", a:["jen","juan","rupija","jin"], t:1 },
+
+  { p:"Gdje je sjedište UN-a?", a:["u New Yorku","u Čikagu","u Vašingtonu","u Briselu"], t:0 },
+
+  { p:"Na čelu centralnih ili narodnih banaka nalaze se:", a:["predsjednici","direktori","guverneri","ništa od navedenog"], t:2 },
+
+  { p:"Otac Aleksandra Velikog (Aleksandra Makedonskog) zvao se:", a:["Filip II","Herkules","Hektor","Ahilej"], t:0 },
+
+  { p:"Belgija je:", a:["republika","carstvo","kraljevina","federativna republika"], t:2 },
+
+  { p:"Deveta umjetnost odnosi se na:", a:["film","fotografiju","strip","kiparstvo"], t:2 },
+
+  { p:"Maču Pikču, sveti grad Inka, se nalazi u:", a:["Meksiku","Čileu","Boliviji","Peruu"], t:3 },
+
+  { p:"Izraz „apstinirati“ znači:", a:["biti zaboravan","usmjeriti se u nešto","uzdržavati se od nečega","ne prezati ni od čega"], t:2 },
+
+  { p:"Solarni sistem se sastoji od:", a:["8 planeta","10 planeta","9 planeta","7 planeta"], t:0 },
+
+  { p:"Uzroci avionskih nesreća se najpouzdanije mogu utvrditi pomoću:", a:["kokpita","crne kutije","poligrafa","procesora"], t:1 }
+
+];
+function start(m){
+  modeType = m;
+  document.getElementById("mode").style.display="none";
+  document.getElementById("quiz").style.display="block";
+  show();
+}
+
+function show(){
+  let q = pitanja[current];
+  document.getElementById("question").innerText = q.p;
+
+  let ans = document.getElementById("answers");
+  ans.innerHTML = "";
+
+  q.izabrano = null;
+
+  q.a.forEach((odg,i)=>{
+    let btn = document.createElement("button");
+    btn.innerText = odg;
+
+    btn.onclick = () => {
+
+  document.querySelectorAll(".answers button")
+    .forEach(b => b.classList.remove("selected", "correct", "wrong"));
+
+  btn.classList.add("selected");
+
+  q.izabrano = i;
+
+  // 🔥 SAMO ZA UČENJE MODE
+  if (modeType === "learn") {
+
+    if (i === q.t) {
+      btn.classList.add("correct"); // zeleno
+    } else {
+      btn.classList.add("wrong"); // crveno
+
+      // pokaži i tačan odgovor zeleno
+      document.querySelectorAll(".answers button")[q.t]
+        .classList.add("correct");
+    }
+  }
+};
+
+    ans.appendChild(btn);
+  });
+}
+
+function next(){
+  let q = pitanja[current];
+
+  if(q.izabrano === q.t){
+    score++;
+  } else {
+    mistakes.push({pitanje:q.p, tacan:q.a[q.t]});
+  }
+
+  current++;
+
+  if(current < pitanja.length){
+    show();
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+
+  document.getElementById("score").innerText =
+    "Rezultat: " + score + "/" + pitanja.length;
+
+  let review = document.getElementById("review");
+  review.innerHTML = "<h3>Greške:</h3>";
+
+  if(mistakes.length === 0){
+    review.innerHTML += "<p>Sve tačno 🎉</p>";
+  } else {
+    mistakes.forEach(m=>{
+      review.innerHTML += `
+        <div>
+          <b>Pitanje:</b> ${m.pitanje}<br>
+          <b>Tačan odgovor:</b> ${m.tacan}
+        </div>
+      `;
+    });
+  }
+}
+
+function restart(){
+  current=0;
+  score=0;
+  mistakes=[];
+  document.getElementById("result").style.display="none";
+  document.getElementById("mode").style.display="block";
+}
+
+function nazad(){
+  window.location.href="pocetna.html";
+}
+
+function nextLesson(){
+  alert("Sljedeća lekcija uskoro 😄");
+}
+
+</script>
+
+</body>
+</html>

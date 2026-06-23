@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lekcija 1</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: rgba(255,255,255,0.05);
+}
+
+.btn {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.answers button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.correct {
+  background: #22c55e !important;
+}
+
+.wrong {
+  background: #ef4444 !important;
+}
+.selected {
+  background: #ef4444;
+  opacity: 0.8;
+}
+
+.hidden {
+  display: none;
+}
+
+.review {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.review div {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <button class="btn" onclick="nazad()">← Lekcije</button>
+  <div>Lekcija 1</div>
+</div>
+
+<div class="container">
+
+  <div id="mode">
+    <h2>Izaberi način rada</h2>
+    <button class="btn" onclick="start('test')">Test</button>
+    <button class="btn" onclick="start('learn')">Učenje</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="card">
+      <h3 id="question"></h3>
+      <div class="answers" id="answers"></div>
+    </div>
+    <button class="btn" onclick="next()">Sljedeće</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <h2 id="score"></h2>
+    <div class="review" id="review"></div>
+    <button class="btn" onclick="restart()">Ponovi</button>
+    <button class="btn" onclick="nextLesson()">Sljedeća lekcija</button>
+  </div>
+
+</div>
+
+<script>
+
+let modeType = "";
+let current = 0;
+let score = 0;
+let mistakes = [];
+ const pitanja = [
+
+  { p:"Za dokument koji je potpisan a da prethodno nije popunjen (npr. ček), kaže se da je:", a:[
+    "blanko",
+    "nevažeći",
+    "neispravan",
+    "apstraktan"
+  ], t:0 },
+
+  { p:"Savremeni koncept poslovanja koji uključuje brigu preduzeća o društvenim pitanjima, zaštiti životne sredine i održivom upravljanju poznat je pod skraćenicom:", a:[
+    "ESG",
+    "VAT",
+    "IMF",
+    "EPS"
+  ], t:0 },
+
+  { p:"Spoljnotrgovinski deficit je:", a:[
+    "veći uvoz od izvoza",
+    "carinska zabrana",
+    "veći izvoz od uvoza",
+    "carinska povlastica"
+  ], t:0 },
+
+  { p:"Potpuna konkurencija predstavlja tržišno stanje u kome:", a:[
+    "postoji samo jedan prodavac koji ima značajan uticaj na formiranje cijena",
+    "postoji veliki broj kupaca koji imaju značajan uticaj na formiranje cijena",
+    "prodavci i kupci imaju gotovo beznačajan uticaj na formiranje cijena",
+    "prodavci i kupci imaju značajan uticaj na formiranje cijena"
+  ], t:2 },
+
+  { p:"Sekundarnom raspodjelom određuje se:", a:[
+    "koliki će dio pripadajućeg dohotka svakog preduzeća ići u ličnu potrošnju, a koliki u akumulaciju",
+    "učešće preduzeća i države u bruto domaćem proizvodu",
+    "trgovina na berzi",
+    "ništa od navedenog"
+  ], t:1 },
+
+  { p:"Cjenovna elastičnost tražnje predstavlja:", a:[
+    "odnos prirasta tražene količine i prirasta cijene",
+    "razliku prirasta tražene količine dobra i prirasta cijene",
+    "razliku procentualne promjene tražene količine dobra i procentualne promjene cijene",
+    "odnos procentualne promjene tražene količine dobra i procentualne promjene cijene"
+  ], t:3 },
+
+  { p:"Currency board je engleski izraz za model monetarne politike a prevodi se kao:", a:[
+    "monetarni odbor",
+    "novčana masa",
+    "monetarni agregati",
+    "inflacija"
+  ], t:0 },
+
+  { p:"Proizvod, cijena, distribucija i promocija su elementi:", a:[
+    "marketing miksa",
+    "promocionog miksa",
+    "menadžment miksa",
+    "ništa od navedenog"
+  ], t:0 },
+
+  { p:"Deviznim rezervama BiH upravlja:", a:[
+    "Ministarstvo finansija",
+    "Poreska uprava",
+    "Centralna banka",
+    "Udruženje ekonomista"
+  ], t:2 },
+
+  { p:"Međunarodni standardi za upravljanje kapitalom i rizicima u bankama nazivaju se:", a:[
+    "Bazelski standardi",
+    "Ciriški standardi",
+    "Londonski standardi",
+    "Ništa od navedenog"
+  ], t:0 },
+
+  { p:"Koja institucija je nadležna za evidentiranje promjene cijena (inflacije) u Republici Srpskoj:", a:[
+    "Banka Srpske",
+    "Poreska uprava Republike Srpske",
+    "Republički zavod za statistiku",
+    "Ministarstvo privrede i preduzetništva"
+  ], t:2 },
+
+  { p:"Kompanija koja ne može da plati dospjele obaveze je:", a:[
+    "kurentna",
+    "akreditovana",
+    "nelikvidna",
+    "solventna"
+  ], t:2 },
+
+  { p:"Skracenica „WWW“ označava:", a:[
+    "wireless world web",
+    "widest web of the world",
+    "world wide web",
+    "ništa od navedenog"
+  ], t:2 },
+
+  { p:"Versus je latinska fraza za riječ:", a:[
+    "protiv",
+    "bolest",
+    "veza",
+    "istina"
+  ], t:0 },
+
+  { p:"Šta je konzorcijum:", a:[
+    "bolest",
+    "zajednica",
+    "mala proizvodna radionica",
+    "arhitektonsko rješenje"
+  ], t:1 },
+
+  { p:"Preduzetnici kao fizička lica registrovana za obavljanje preduzetničke djelatnosti svoje poslovne knjige vode po sistemu prostog knjigovodstva prema:", a:[
+    "Zakonu o privrednim društvima",
+    "Zakonu o porezu na dobit",
+    "Zakonu o računovodstvu i reviziji",
+    "Zakonu o porezu na dohodak"
+  ], t:3},
+
+  { p:"Hipoteka je:", a:[
+    "instrument osiguranja naplate",
+    "instrument plaćanja",
+    "vrsta banke",
+    "popis dugova"
+  ], t:0 },
+
+  { p:"Patent je:", a:[
+    "pravo korištenja licence",
+    "vlasnička hartija od vrijednosti",
+    "dužnička hartija od vrijednosti",
+    "dokument o zaštiti pronalaska"
+  ], t:3 },
+
+  { p:"Pраг ekonomičnosti podrazumijeva:", a:[
+    "jednakost ukupnog proizvoda i ukupnog troška",
+    "jednakost ukupnog prihoda i ukupnog troška",
+    "jednakost ukupnog prihoda i ukupnog fiksnog troška",
+    "jednakost ukupnog proizvoda i ukupnog fiksnog troška"
+  ], t:1 },
+
+  { p:"Opšti okvirni sporazum za mir u Bosni i Hercegovini, poznatiji kao Dejtonski mirovni sporazum, potpisan je u:", a:[
+    "Los Anđelesu",
+    "Parizu",
+    "Briselu",
+    "Berlinu"
+  ], t:1 }
+
+];
+function start(m){
+  modeType = m;
+  document.getElementById("mode").style.display="none";
+  document.getElementById("quiz").style.display="block";
+  show();
+}
+
+function show(){
+  let q = pitanja[current];
+  document.getElementById("question").innerText = q.p;
+
+  let ans = document.getElementById("answers");
+  ans.innerHTML = "";
+
+  q.izabrano = null;
+
+  q.a.forEach((odg,i)=>{
+    let btn = document.createElement("button");
+    btn.innerText = odg;
+
+    btn.onclick = () => {
+
+  document.querySelectorAll(".answers button")
+    .forEach(b => b.classList.remove("selected", "correct", "wrong"));
+
+  btn.classList.add("selected");
+
+  q.izabrano = i;
+
+  // 🔥 SAMO ZA UČENJE MODE
+  if (modeType === "learn") {
+
+    if (i === q.t) {
+      btn.classList.add("correct"); // zeleno
+    } else {
+      btn.classList.add("wrong"); // crveno
+
+      // pokaži i tačan odgovor zeleno
+      document.querySelectorAll(".answers button")[q.t]
+        .classList.add("correct");
+    }
+  }
+};
+
+    ans.appendChild(btn);
+  });
+}
+
+function next(){
+  let q = pitanja[current];
+
+  if(q.izabrano === q.t){
+    score++;
+  } else {
+    mistakes.push({pitanje:q.p, tacan:q.a[q.t]});
+  }
+
+  current++;
+
+  if(current < pitanja.length){
+    show();
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+
+  document.getElementById("score").innerText =
+    "Rezultat: " + score + "/" + pitanja.length;
+
+  let review = document.getElementById("review");
+  review.innerHTML = "<h3>Greške:</h3>";
+
+  if(mistakes.length === 0){
+    review.innerHTML += "<p>Sve tačno 🎉</p>";
+  } else {
+    mistakes.forEach(m=>{
+      review.innerHTML += `
+        <div>
+          <b>Pitanje:</b> ${m.pitanje}<br>
+          <b>Tačan odgovor:</b> ${m.tacan}
+        </div>
+      `;
+    });
+  }
+}
+
+function restart(){
+  current=0;
+  score=0;
+  mistakes=[];
+  document.getElementById("result").style.display="none";
+  document.getElementById("mode").style.display="block";
+}
+
+function nazad(){
+  window.location.href="pocetna.html";
+}
+
+function nextLesson(){
+  alert("Sljedeća lekcija uskoro 😄");
+}
+
+</script>
+
+</body>
+</html>

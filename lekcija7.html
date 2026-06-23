@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lekcija 1</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: rgba(255,255,255,0.05);
+}
+
+.btn {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.answers button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.correct {
+  background: #22c55e !important;
+}
+
+.wrong {
+  background: #ef4444 !important;
+}
+.selected {
+  background: #ef4444;
+  opacity: 0.8;
+}
+
+.hidden {
+  display: none;
+}
+
+.review {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.review div {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <button class="btn" onclick="nazad()">← Lekcije</button>
+  <div>Lekcija 1</div>
+</div>
+
+<div class="container">
+
+  <div id="mode">
+    <h2>Izaberi način rada</h2>
+    <button class="btn" onclick="start('test')">Test</button>
+    <button class="btn" onclick="start('learn')">Učenje</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="card">
+      <h3 id="question"></h3>
+      <div class="answers" id="answers"></div>
+    </div>
+    <button class="btn" onclick="next()">Sljedeće</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <h2 id="score"></h2>
+    <div class="review" id="review"></div>
+    <button class="btn" onclick="restart()">Ponovi</button>
+    <button class="btn" onclick="nextLesson()">Sljedeća lekcija</button>
+  </div>
+
+</div>
+
+<script>
+
+let modeType = "";
+let current = 0;
+let score = 0;
+let mistakes = [];
+const pitanja = [
+  { p:"Menadžment je proces koji se sastoji iz četiri osnovne faze, to su:", a:["planiranje, organizovanje, vođenje i kontrola","planiranje, organizovanje, motivisanje i kontrola","analiza, organizovanje, motivisanje i kontrola","predviđanje, organizovanje, vođenje i procjena radne uspješnosti"], t:0 },
+
+  { p:"Grafički znak koji predstavlja naziv organizacije, preduzeća ili nečeg drugog što treba grafički prezentovati naziva se:", a:["gudvil","patent","logo","licenca"], t:2 },
+
+  { p:"Zastava Italije sastoji se od sljedećih boja:", a:["zelena i narandžasta","crvena, bijela i plava","zelena, bijela i žuta","zelena, bijela i crvena"], t:3 },
+
+  { p:"Koja je engleska oznaka za Međunarodni monetarni fond?", a:["IMF","IFC","IMM","IDA"], t:0 },
+
+  { p:"Canva je aplikacija koja se koristi za:", a:["rješavanje matematičkih zadataka","provjeru gramatike","računovodstvenu evidenciju","grafički dizajn"], t:3 },
+
+  { p:"Koji prirodni fenomen se mjeri Rihterovom skalom:", a:["tornado","vulkanske erupcije","cunami","zemljotres"], t:3 },
+
+  { p:"Koje godine je donesen Sretenjski ustav?", a:["1835.","1945.","1785.","1815."], t:0 },
+
+  { p:"Tvrdnja koja se ne dokazuje je:", a:["aksiom","teorema","teorija","hipoteza"], t:0 },
+
+  { p:"Ivan IV Grozni je bio:", a:["ruski pisac","ruski car","ruski kralj","ruski humanista"], t:1 },
+
+  { p:"Godine 1865. ubijen je američki predsjednik koji se zvao:", a:["Abraham Linkoln","Džordž Vašington","Džon Ficdžerald Kenedi","Teodor Ruzvelt"], t:0 },
+
+  { p:"Sječa knezova bila je povod za:", a:["Prvi srpski ustanak","Drugi srpski ustanak","Prvi balkanski rat","Drugi balkanski rat"], t:0 },
+
+  { p:"Aludirati znači:", a:["nepravilno se izražavati","govoriti između redova","skretati s teme","navoditi na nešto"], t:1 },
+
+  { p:"Zbirku pripovjedaka S planine i ispod planine napisao je:", a:["Dobrica Erić","Petar Kočić","Đura Jakšić","Branko Ćopić"], t:1 },
+
+  { p:"Najrasprostranjenija religija na svijetu je:", a:["islam","hinduizam","hrišćanstvo","ništa od navedenog"], t:2 },
+
+  { p:"Skraćenica SEO u digitalnom marketingu označava:", a:["izvršnog direktora","internet pretraživače","optimizaciju web sajta za pretraživače","društvene mreže"], t:2 },
+
+  { p:"Tableau i Power BI su softveri iz domena:", a:["vizualizacije podataka","računovodstvene evidencije","pripreme i izrade ekonomskih planova","automatizacije procesa"], t:0 },
+
+  { p:"Askorbinska kiselina je drugi naziv za:", a:["Vitamin A","Riboflavin","Vitamin E","Vitamin C"], t:3 },
+
+  { p:"Univerzitet u Banjoj Luci je osnovan:", a:["1970. godine","1980. godine","1975. godine","1979. godine"], t:3 },
+
+  { p:"Nasljedna bolest neprepoznavanja boja zove se:", a:["daltonizam","gonoreja","multipla skleroza","nekolorizam"], t:0 },
+
+  { p:"Paničićeva omorika je otkrivena na:", a:["Kopaoniku","Zlatiboru","Bjelašnici","Tari"], t:3 }
+];
+function start(m){
+  modeType = m;
+  document.getElementById("mode").style.display="none";
+  document.getElementById("quiz").style.display="block";
+  show();
+}
+
+function show(){
+  let q = pitanja[current];
+  document.getElementById("question").innerText = q.p;
+
+  let ans = document.getElementById("answers");
+  ans.innerHTML = "";
+
+  q.izabrano = null;
+
+  q.a.forEach((odg,i)=>{
+    let btn = document.createElement("button");
+    btn.innerText = odg;
+
+    btn.onclick = () => {
+
+  document.querySelectorAll(".answers button")
+    .forEach(b => b.classList.remove("selected", "correct", "wrong"));
+
+  btn.classList.add("selected");
+
+  q.izabrano = i;
+
+  // 🔥 SAMO ZA UČENJE MODE
+  if (modeType === "learn") {
+
+    if (i === q.t) {
+      btn.classList.add("correct"); // zeleno
+    } else {
+      btn.classList.add("wrong"); // crveno
+
+      // pokaži i tačan odgovor zeleno
+      document.querySelectorAll(".answers button")[q.t]
+        .classList.add("correct");
+    }
+  }
+};
+
+    ans.appendChild(btn);
+  });
+}
+
+function next(){
+  let q = pitanja[current];
+
+  if(q.izabrano === q.t){
+    score++;
+  } else {
+    mistakes.push({pitanje:q.p, tacan:q.a[q.t]});
+  }
+
+  current++;
+
+  if(current < pitanja.length){
+    show();
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+
+  document.getElementById("score").innerText =
+    "Rezultat: " + score + "/" + pitanja.length;
+
+  let review = document.getElementById("review");
+  review.innerHTML = "<h3>Greške:</h3>";
+
+  if(mistakes.length === 0){
+    review.innerHTML += "<p>Sve tačno 🎉</p>";
+  } else {
+    mistakes.forEach(m=>{
+      review.innerHTML += `
+        <div>
+          <b>Pitanje:</b> ${m.pitanje}<br>
+          <b>Tačan odgovor:</b> ${m.tacan}
+        </div>
+      `;
+    });
+  }
+}
+
+function restart(){
+  current=0;
+  score=0;
+  mistakes=[];
+  document.getElementById("result").style.display="none";
+  document.getElementById("mode").style.display="block";
+}
+
+function nazad(){
+  window.location.href="pocetna.html";
+}
+
+function nextLesson(){
+  alert("Sljedeća lekcija uskoro 😄");
+}
+
+</script>
+
+</body>
+</html>

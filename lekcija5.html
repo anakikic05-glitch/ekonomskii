@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lekcija 1</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: rgba(255,255,255,0.05);
+}
+
+.btn {
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.container {
+  padding: 20px;
+  max-width: 700px;
+  margin: auto;
+}
+
+.card {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 15px;
+  margin-top: 20px;
+}
+
+.answers button {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.correct {
+  background: #22c55e !important;
+}
+
+.wrong {
+  background: #ef4444 !important;
+}
+.selected {
+  background: #ef4444;
+  opacity: 0.8;
+}
+
+.hidden {
+  display: none;
+}
+
+.review {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.review div {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+  <button class="btn" onclick="nazad()">← Lekcije</button>
+  <div>Lekcija 1</div>
+</div>
+
+<div class="container">
+
+  <div id="mode">
+    <h2>Izaberi način rada</h2>
+    <button class="btn" onclick="start('test')">Test</button>
+    <button class="btn" onclick="start('learn')">Učenje</button>
+  </div>
+
+  <div id="quiz" class="hidden">
+    <div class="card">
+      <h3 id="question"></h3>
+      <div class="answers" id="answers"></div>
+    </div>
+    <button class="btn" onclick="next()">Sljedeće</button>
+  </div>
+
+  <div id="result" class="hidden">
+    <h2 id="score"></h2>
+    <div class="review" id="review"></div>
+    <button class="btn" onclick="restart()">Ponovi</button>
+    <button class="btn" onclick="nextLesson()">Sljedeća lekcija</button>
+  </div>
+
+</div>
+
+<script>
+
+let modeType = "";
+let current = 0;
+let score = 0;
+let mistakes = [];
+
+
+const pitanja = [
+  { p:"Mjerenje učinka poređenjem sa najboljim u toj oblasti je:", a:["mobbing","benchmarking","monitoring","advertajzing"], t:1 },
+
+  { p:"Kojem kontinentu pripada Rt dobre nade?", a:["Americi","Africi","Aziji","Australiji"], t:1 },
+
+  { p:"Šta označavamo meridijanima:", a:["geografsku dužinu","geografsku visinu","geografsku širinu","geografsku dubinu"], t:0 },
+
+  { p:"Raskol na zapadnu Katoličku i istočnu Pravoslavnu crkvu dogodio se:", a:["1054 godine","1254 godine","1154 godine","1354 godine"], t:0 },
+
+  { p:"Bitka na Kosovu između srpskih snaga koje je predvodio knez Lazar Hrebeljanović i osmanske vojske na čelu sa sultanom Muратом I, odigrala se:", a:["1289. godine","1359. godine","1389. godine","1459. godine"], t:2 },
+
+  { p:"Maršalov plan je bio:", a:[
+    "plan Josipa Broza Tita za oslobođenje Jugoslavije",
+    "plan Josipa Broza Tita za obnovu Jugoslavije poslije Drugog svjetskog rata",
+    "plan za obnovu Zapadne Evrope poslije Prvog svjetskog rata",
+    "plan za obnovu Zapadne Evrope poslije Drugog svjetskog rata"
+  ], t:3 },
+
+  { p:"Pol Samuelson je dobitnik Nobelove nagrade za:", a:["medicinu","fiziku","ekonomiju","ništa od navedenog"], t:2 },
+
+  { p:"Mjerna jedinica za električni otpor je:", a:["Om – ohm","Amper","Volt","Kulon"], t:0 },
+
+  { p:"Napoleon je konačno poražen bitkom kod:", a:["Seme","Verdena","Vaterloa","Piramida"], t:2 },
+
+  { p:"Rimsko carstvo podijeljeno je na Zapadno Rimsko carstvo i Istočno Rimsko carstvo, nakon smrti cara Teodosija I Velikog:", a:["296. godine n.e.","395. godine n.e.","476. godine n.e.","1453. godine n.e."], t:1 },
+
+  { p:"„Načertanije“ je nekadašnji tajni program spoljašnje i nacionalne politike Srbije koji je napisao:", a:["Car Dušan","Njegoš","Ilija Garašanin","Vladika Danilo"], t:2 },
+
+  { p:"Riječi u parovima: dobro – zlo, dati – uzeti, zovu se:", a:["sinonimi","homonimi","antipodi","antonimi"], t:3 },
+
+  { p:"Pravilno je napisati:", a:["takozvani","tako-zvani","tako zvani","ništa od navedenog"], t:0 },
+
+  { p:"U staroslovenskoj mitologiji bog Perun je poznat i kao:", a:["bog usjeva","bog groma","bog gostoprimstva","bog trgovine"], t:1 },
+
+  { p:"Opisni, gradivni i prisvojni su najvažnije vrste:", a:["prideva","predloga","rečica","veznika"], t:0 },
+
+  { p:"Koji padež nema pitanja?", a:["nominativ","genitiv","dativ","vokativ"], t:3 },
+
+  { p:"Najstariji oblik književnog stvaranja je:", a:["lingvistika","pismena književnost","usmena književnost","belestristika"], t:2 },
+
+  { p:"Kraljevina Srba, Hrvata i Slovenaca proglašena je:", a:["1. decembra 1915. godine","1. decembra 1916. godine","1. decembra 1917. godine","1. decembra 1918. godine"], t:3 },
+
+  { p:"Pronalažač štamparske mašine je:", a:["Gutenberg","Geteborg","Rojter","niko od navedenih"], t:0 },
+
+  { p:"Koje godine je Banja Luka postala sjedište Vrbarske banovine?", a:["1941.","1918.","1945.","1929."], t:3 }
+];
+function start(m){
+  modeType = m;
+  document.getElementById("mode").style.display="none";
+  document.getElementById("quiz").style.display="block";
+  show();
+}
+
+function show(){
+  let q = pitanja[current];
+  document.getElementById("question").innerText = q.p;
+
+  let ans = document.getElementById("answers");
+  ans.innerHTML = "";
+
+  q.izabrano = null;
+
+  q.a.forEach((odg,i)=>{
+    let btn = document.createElement("button");
+    btn.innerText = odg;
+
+    btn.onclick = () => {
+
+  document.querySelectorAll(".answers button")
+    .forEach(b => b.classList.remove("selected", "correct", "wrong"));
+
+  btn.classList.add("selected");
+
+  q.izabrano = i;
+
+  // 🔥 SAMO ZA UČENJE MODE
+  if (modeType === "learn") {
+
+    if (i === q.t) {
+      btn.classList.add("correct"); // zeleno
+    } else {
+      btn.classList.add("wrong"); // crveno
+
+      // pokaži i tačan odgovor zeleno
+      document.querySelectorAll(".answers button")[q.t]
+        .classList.add("correct");
+    }
+  }
+};
+
+    ans.appendChild(btn);
+  });
+}
+
+function next(){
+  let q = pitanja[current];
+
+  if(q.izabrano === q.t){
+    score++;
+  } else {
+    mistakes.push({pitanje:q.p, tacan:q.a[q.t]});
+  }
+
+  current++;
+
+  if(current < pitanja.length){
+    show();
+  } else {
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+
+  document.getElementById("score").innerText =
+    "Rezultat: " + score + "/" + pitanja.length;
+
+  let review = document.getElementById("review");
+  review.innerHTML = "<h3>Greške:</h3>";
+
+  if(mistakes.length === 0){
+    review.innerHTML += "<p>Sve tačno 🎉</p>";
+  } else {
+    mistakes.forEach(m=>{
+      review.innerHTML += `
+        <div>
+          <b>Pitanje:</b> ${m.pitanje}<br>
+          <b>Tačan odgovor:</b> ${m.tacan}
+        </div>
+      `;
+    });
+  }
+}
+
+function restart(){
+  current=0;
+  score=0;
+  mistakes=[];
+  document.getElementById("result").style.display="none";
+  document.getElementById("mode").style.display="block";
+}
+
+function nazad(){
+  window.location.href="pocetna.html";
+}
+
+function nextLesson(){
+  alert("Sljedeća lekcija uskoro 😄");
+}
+
+</script>
+
+</body>
+</html>
